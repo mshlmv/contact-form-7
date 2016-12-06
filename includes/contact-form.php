@@ -190,8 +190,6 @@ class WPCF7_ContactForm {
 			'mail' => array(),
 			'mail_2' => array(),
 			'messages' => array(),
-			'wpcf7_to_quest' => '',
-			'wpcf7_to_quest_id' => '',
 			'additional_settings' => '' ) );
 
 		$properties = (array) apply_filters( 'wpcf7_contact_form_properties',
@@ -350,12 +348,6 @@ class WPCF7_ContactForm {
 		$html .= sprintf( '<form %s>', $atts ) . "\n";
 		$html .= $this->form_hidden_fields();
 		$html .= $this->form_elements();
-
-		if ($this->wpcf7_to_quest) {
-            $html .= '<div class="answer_to_quest" style="font-size: 11px">
-                    Сообщение отправится в <a href="/category/forum/" target="_blank">Вопрос-Ответ</a> <input type="checkbox" name="answer_to_quest" value="1" checked>
-                </div>';
-        }
 
 		if ( ! $this->responses_count ) {
 			$html .= $this->form_response_output();
