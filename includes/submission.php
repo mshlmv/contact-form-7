@@ -74,7 +74,7 @@ class WPCF7_Submission {
 		$posted_data = array_diff_key( $posted_data, array( '_wpnonce' => '' ) );
 		$posted_data = $this->sanitize_posted_data( $posted_data );
 
-		$tags = $this->contact_form->form_scan_shortcode();
+		$tags = $this->contact_form->scan_form_tags();
 
 		foreach ( (array) $tags as $tag ) {
 			if ( empty( $tag['name'] ) ) {
@@ -131,9 +131,7 @@ class WPCF7_Submission {
 		}
 
 		$this->meta = array(
-			'remote_ip' => isset( $_SERVER['REMOTE_ADDR'] )
-				? preg_replace( '/[^0-9a-f.:, ]/', '', $_SERVER['REMOTE_ADDR'] )
-				: '',
+			'remote_ip' => $this->get_remote_ip_addr(),
 			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] )
 				? substr( $_SERVER['HTTP_USER_AGENT'], 0, 254 ) : '',
 			'url' => preg_replace( '%(?<!:|/)/.*$%', '',
@@ -169,33 +167,38 @@ class WPCF7_Submission {
 			do_action( 'wpcf7_mail_failed', $contact_form );
 		}
 
-		//комментирование привязанной записи
+    //комментирование привязанной записи
 		if ($contact_form->wpcf7_to_quest == 1 && $contact_form->wpcf7_to_quest_id) {
-
-            $commentdata = [];
-
-            $to_quest_id = $contact_form->wpcf7_to_quest_id;
-            $name = $this->get_posted_data('your-name');
-            $email = $this->get_posted_data('your-email');
-            $message = $this->get_posted_data('your-message');
-            $answer_to_quest = $this->get_posted_data('answer_to_quest');
-
-            if ($answer_to_quest && $to_quest_id && $name && $email && $message) {
-                $commentdata['comment_author'] = $name;
-                $commentdata['comment_author_email'] = $email;
-                $commentdata['comment_author_url'] = $_SERVER['REMOTE_HOST'];
-                $commentdata['comment_author_IP'] = $_SERVER['REMOTE_ADDR'];
-                $commentdata['comment_post_ID'] = $to_quest_id;
-                $commentdata['comment_content'] = $message;
-                $commentdata['comment_approved'] = 0;
-
-                wp_insert_comment($commentdata);
-            }
-        }
+      $commentdata = [];
+      $to_quest_id = $contact_form->wpcf7_to_quest_id;
+      $name = $this->get_posted_data('your-name');
+      $email = $this->get_posted_data('your-email');
+      $message = $this->get_posted_data('your-message');
+      $answer_to_quest = $this->get_posted_data('answer_to_quest');
+      if ($answer_to_quest && $to_quest_id && $name && $email && $message) {
+        $commentdata['comment_author'] = $name;
+        $commentdata['comment_author_email'] = $email;
+        $commentdata['comment_author_url'] = $_SERVER['REMOTE_HOST'];
+        $commentdata['comment_author_IP'] = $_SERVER['REMOTE_ADDR'];
+        $commentdata['comment_post_ID'] = $to_quest_id;
+        $commentdata['comment_content'] = $message;
+        $commentdata['comment_approved'] = 0;
+        wp_insert_comment($commentdata);
+      }
+    }
 
 		$this->remove_uploaded_files();
 
 		return $this->status;
+	}
+
+	private function get_remote_ip_addr() {
+		if ( isset( $_SERVER['REMOTE_ADDR'] )
+		&& WP_Http::is_ip_address( $_SERVER['REMOTE_ADDR'] ) ) {
+			return $_SERVER['REMOTE_ADDR'];
+		}
+
+		return '';
 	}
 
 	private function validate() {
@@ -206,7 +209,7 @@ class WPCF7_Submission {
 		require_once WPCF7_PLUGIN_DIR . '/includes/validation.php';
 		$result = new WPCF7_Validation();
 
-		$tags = $this->contact_form->form_scan_shortcode();
+		$tags = $this->contact_form->scan_form_tags();
 
 		foreach ( $tags as $tag ) {
 			$result = apply_filters( 'wpcf7_validate_' . $tag['type'],

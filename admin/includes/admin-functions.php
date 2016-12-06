@@ -42,15 +42,14 @@ function wpcf7_save_contact_form( $post_id = -1 ) {
 		}
 	}
 
-    if ( isset( $_POST['wpcf7_to_quest'] ) ) {
-        $contact_form->wpcf7_to_quest = 1;
-    } else {
-        $contact_form->wpcf7_to_quest = 0;
-    }
-
-    if ( isset( $_POST['wpcf7_to_quest_id'] ) ) {
-        $contact_form->wpcf7_to_quest_id = $_POST['wpcf7_to_quest_id'];
-    }
+  if ( isset( $_POST['wpcf7_to_quest'] ) ) {
+    $contact_form->wpcf7_to_quest = 1;
+  } else {
+    $contact_form->wpcf7_to_quest = 0;
+  }
+  if ( isset( $_POST['wpcf7_to_quest_id'] ) ) {
+    $contact_form->wpcf7_to_quest_id = $_POST['wpcf7_to_quest_id'];
+  }
 
 	$properties = $contact_form->get_properties();
 
@@ -161,15 +160,14 @@ function wpcf7_save_contact_form( $post_id = -1 ) {
 			$_POST['wpcf7-additional-settings'] );
 	}
 
-    if ( isset( $_POST['wpcf7_to_quest'] ) ) {
-        $properties['wpcf7_to_quest'] = 1;
-    } else {
-        $properties['wpcf7_to_quest'] = 0;
-    }
-
-    if ( isset( $_POST['wpcf7_to_quest_id'] ) ) {
-        $properties['wpcf7_to_quest_id'] = (int)trim($_POST['wpcf7_to_quest_id']);
-    }
+  if ( isset( $_POST['wpcf7_to_quest'] ) ) {
+    $properties['wpcf7_to_quest'] = 1;
+  } else {
+    $properties['wpcf7_to_quest'] = 0;
+  }
+  if ( isset( $_POST['wpcf7_to_quest_id'] ) ) {
+    $properties['wpcf7_to_quest_id'] = (int)trim($_POST['wpcf7_to_quest_id']);
+  }
 
 	$contact_form->set_properties( $properties );
 

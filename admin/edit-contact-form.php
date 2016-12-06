@@ -217,30 +217,24 @@ if ( $post ) :
 ?>
 </div><!-- #contact-form-editor -->
 
-	<?php if (current_user_can('wpcf7_edit_contact_form', $post_id)) : ?>
-		<div style="padding: 20px 0 0 0;">
-			<strong style="padding-right: 5px;">
-				Разрешить отправку сообщения на форму <a href="/category/forum/" target="_blank">Вопрос-Ответ</a>
-			</strong>
-			<input type="checkbox" name="wpcf7_to_quest" value="1" <?php if($post->prop('wpcf7_to_quest')): ?>checked<?php endif; ?>>
-		</div>
-		<div style="padding: 20px 0 0 0;">
-			<strong style="padding-right: 5px;">
-				Запись для комментирования:
-			</strong>
-			<select name="wpcf7_to_quest_id">
-				<?php foreach (get_posts(['numberposts' => 1000, 'category' => 'forum']) as $_post): ?>
-					<option value="<?php echo $_post->ID ?>"
-						<?php if ($post->prop('wpcf7_to_quest_id') == $_post->ID): ?>selected<?php endif; ?>
-					>
-						<?php echo $_post->post_title ?>
-					</option>
-				<?php endforeach; ?>
-			</select>
-		</div>
+<?php if (current_user_can('wpcf7_edit_contact_form', $post_id)) : ?>
+	<div style="padding: 20px 0 0 0;">
+		<strong style="padding-right: 5px;">
+			Разрешить отправку сообщения на форму <a href="/category/forum/" target="_blank">Вопрос-Ответ</a>
+		</strong>
+		<input type="checkbox" name="wpcf7_to_quest" value="1" <?php if($post->prop('wpcf7_to_quest')): ?>checked<?php endif; ?>>
+	</div>
+	<div style="padding: 20px 0 0 0;">
+		<strong style="padding-right: 5px;">Запись для комментирования:</strong>
+		<select name="wpcf7_to_quest_id">
+			<?php foreach (get_posts(['numberposts' => 1000, 'category' => 'forum']) as $_post): ?>
+				<option value="<?php echo $_post->ID ?>"<?php if ($post->prop('wpcf7_to_quest_id') == $_post->ID): ?>selected<?php endif; ?>><?php echo $_post->post_title ?></option>
+			<?php endforeach; ?>
+		</select>
+	</div>
 
-		<p class="submit"><?php wpcf7_admin_save_button($post_id); ?></p>
-	<?php endif; ?>
+	<p class="submit"><?php wpcf7_admin_save_button($post_id); ?></p>
+<?php endif; ?>
 
 </div><!-- #postbox-container-2 -->
 
