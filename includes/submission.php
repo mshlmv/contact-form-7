@@ -168,13 +168,16 @@ class WPCF7_Submission {
 		}
 
     //комментирование привязанной записи
-		if ($contact_form->wpcf7_to_quest == 1 && $contact_form->wpcf7_to_quest_id) {
-      $commentdata = [];
+    if ($contact_form->wpcf7_to_quest == 1 && $contact_form->wpcf7_to_quest_id) {
+
+      $commentdata = array();
+
       $to_quest_id = $contact_form->wpcf7_to_quest_id;
       $name = $this->get_posted_data('your-name');
       $email = $this->get_posted_data('your-email');
       $message = $this->get_posted_data('your-message');
       $answer_to_quest = $this->get_posted_data('answer_to_quest');
+
       if ($answer_to_quest && $to_quest_id && $name && $email && $message) {
         $commentdata['comment_author'] = $name;
         $commentdata['comment_author_email'] = $email;
@@ -183,6 +186,7 @@ class WPCF7_Submission {
         $commentdata['comment_post_ID'] = $to_quest_id;
         $commentdata['comment_content'] = $message;
         $commentdata['comment_approved'] = 0;
+
         wp_insert_comment($commentdata);
       }
     }
