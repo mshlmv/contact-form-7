@@ -71,7 +71,8 @@ class WPCF7_Submission {
 
 	private function setup_posted_data() {
 		$posted_data = (array) $_POST;
-		$posted_data = array_diff_key( $posted_data, array( '_wpnonce' => '' ) );
+		$posted_data = array_diff_key(
+			$posted_data, array( '_wpcf7_nonce' => '' ) );
 		$posted_data = $this->sanitize_posted_data( $posted_data );
 
 		$tags = $this->contact_form->scan_form_tags();
@@ -134,11 +135,13 @@ class WPCF7_Submission {
 			'remote_ip' => $this->get_remote_ip_addr(),
 			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] )
 				? substr( $_SERVER['HTTP_USER_AGENT'], 0, 254 ) : '',
-			'url' => preg_replace( '%(?<!:|/)/.*$%', '',
-				untrailingslashit( home_url() ) ) . wpcf7_get_request_uri(),
+			'url' => $this->get_request_url(),
 			'timestamp' => current_time( 'timestamp' ),
-			'unit_tag' => isset( $_POST['_wpcf7_unit_tag'] )
-				? $_POST['_wpcf7_unit_tag'] : '' );
+			'unit_tag' =>
+				isset( $_POST['_wpcf7_unit_tag'] ) ? $_POST['_wpcf7_unit_tag'] : '',
+			'container_post_id' => isset( $_POST['_wpcf7_container_post'] )
+				? (int) $_POST['_wpcf7_container_post'] : 0,
+		);
 
 		$contact_form = $this->contact_form;
 
@@ -167,26 +170,6 @@ class WPCF7_Submission {
 			do_action( 'wpcf7_mail_failed', $contact_form );
 		}
 
-    //комментирование привязанной записи
-		if ($contact_form->wpcf7_to_quest == 1 && $contact_form->wpcf7_to_quest_id) {
-      $commentdata = [];
-      $to_quest_id = $contact_form->wpcf7_to_quest_id;
-      $name = $this->get_posted_data('your-name');
-      $email = $this->get_posted_data('your-email');
-      $message = $this->get_posted_data('your-message');
-      $answer_to_quest = $this->get_posted_data('answer_to_quest');
-      if ($answer_to_quest && $to_quest_id && $name && $email && $message) {
-        $commentdata['comment_author'] = $name;
-        $commentdata['comment_author_email'] = $email;
-        $commentdata['comment_author_url'] = $_SERVER['REMOTE_HOST'];
-        $commentdata['comment_author_IP'] = $_SERVER['REMOTE_ADDR'];
-        $commentdata['comment_post_ID'] = $to_quest_id;
-        $commentdata['comment_content'] = $message;
-        $commentdata['comment_approved'] = 0;
-        wp_insert_comment($commentdata);
-      }
-    }
-
 		$this->remove_uploaded_files();
 
 		return $this->status;
@@ -201,6 +184,25 @@ class WPCF7_Submission {
 		return '';
 	}
 
+	private function get_request_url() {
+		$home_url = untrailingslashit( home_url() );
+
+		if ( isset( $_SERVER['HTTP_X_REQUESTED_WITH'] )
+		&& 'XMLHttpRequest' == $_SERVER['HTTP_X_REQUESTED_WITH'] ) {
+			$referer = isset( $_SERVER['HTTP_REFERER'] )
+				? trim( $_SERVER['HTTP_REFERER'] ) : '';
+
+			if ( $referer && 0 === strpos( $referer, $home_url ) ) {
+				return esc_url_raw( $referer );
+			}
+		}
+
+		$url = preg_replace( '%(?<!:|/)/.*$%', '', $home_url )
+			. wpcf7_get_request_uri();
+
+		return $url;
+	}
+
 	private function validate() {
 		if ( $this->invalid_fields ) {
 			return false;
@@ -212,8 +214,8 @@ class WPCF7_Submission {
 		$tags = $this->contact_form->scan_form_tags();
 
 		foreach ( $tags as $tag ) {
-			$result = apply_filters( 'wpcf7_validate_' . $tag['type'],
-				$result, $tag );
+			$type = $tag['type'];
+			$result = apply_filters( "wpcf7_validate_{$type}", $result, $tag );
 		}
 
 		$result = apply_filters( 'wpcf7_validate', $result, $tags );
@@ -248,7 +250,8 @@ class WPCF7_Submission {
 	}
 
 	private function verify_nonce() {
-		return wpcf7_verify_nonce( $_POST['_wpnonce'], $this->contact_form->id() );
+		return wpcf7_verify_nonce(
+			$_POST['_wpcf7_nonce'], $this->contact_form->id() );
 	}
 
 	private function blacklist_check() {
